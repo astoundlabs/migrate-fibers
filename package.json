@@ -1,0 +1,19 @@
+{
+  "name": "migrate",
+  "version": "1.0.0",
+  "bin": {
+	"migrate": "./bin/migrate"
+  },
+
+  "dependencies": {
+	"commander": "1.0.x",
+	"underscore": "1.3.x",
+	"fibers": "0.6.x",
+	"pg-fibers": "git://github.com/astoundlabs/pg-fibers.git"
+  },
+  "devDependencies": {
+	"mocha-fibers": "git://github.com/astoundlabs/mocha-fibers",
+	"js-yaml": "1.0.x",
+	"should": "1.1.x"
+  }
+}

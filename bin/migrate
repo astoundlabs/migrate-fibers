@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+program = require('commander');
+Migrate = require('../lib/migrate');
+_ = require('underscore');
+
+Fiber(function(){
+  program
+	.option('-c --config <yaml file>', 'Database configuration file')
+	.option('-e --env <environment>', 'Environment to use')
+
+
+  program
+	.command('up')
+	.action(function(){
+	  new Migrate(_.merge({}, program, this)).up(program.steps);
+	});
+
+  program
+	.command('down')
+	.option('-s --steps', 'Steps to rollback', parseInt)
+	.action(function(){
+	  new Migrate(_.merge({}, program, this).down(program.steps));
+	});
+});
