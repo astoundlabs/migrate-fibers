@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-program = require('commander');
-Migrate = require('../lib/migrate');
-_ = require('underscore');
+var program = require('commander');
+var Migrate = require('../lib/migrate');
+var _ = require('underscore');
 
 Fiber(function(){
   program
@@ -13,13 +13,25 @@ Fiber(function(){
   program
 	.command('up')
 	.action(function(){
-	  new Migrate(_.merge({}, program, this)).up(program.steps);
+	  new Migrate(_.extend({}, program, this)).up(program.steps);
+	  console.log("Completed migrations");
 	});
 
   program
 	.command('down')
 	.option('-s --steps', 'Steps to rollback', parseInt)
 	.action(function(){
-	  new Migrate(_.merge({}, program, this).down(program.steps));
+	  new Migrate(_.extend({}, program, this)).down(program.steps);
+	  console.log("Completed " + (program.steps || 1) + " down migrations");
 	});
-});
+
+  program
+	.command('create <name>')
+	.action(function(name){
+	  var filename = new Migrate(_.extend({}, program, this)).create(name);
+	  console.log("Created " + filename);
+	});
+
+  program.parse(process.argv);
+  process.exit(0);
+}).run();

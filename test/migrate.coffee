@@ -6,6 +6,8 @@ settings = require('../config/database.yml').test
 pgfibers = require 'pg-fibers'
 should = require 'should'
 pg = require 'pg'
+path = require 'path'
+fs = require 'fs'
 
 
 exec = (cmd) ->
@@ -132,9 +134,27 @@ describe 'Migrate', ->
 
   describe 'constructor', ->
     it 'should connect to db based on environment', ->
-      (->
+      (=>
         @migrate = new Migrate
           migrations: './test/fixtures/migrations/good-down'
           env: 'development'
+        @migrate.up()
       ).should.throw()
       
+  describe 'create', ->
+    beforeEach ->
+      @migrate = new Migrate
+        migrations: './test/tmp'
+      @filename = @migrate.create('foo')
+
+    afterEach ->
+      fs.unlinkSync(path.join('./test/tmp', @filename))
+      
+    it 'should create filename with timestamp', ->
+      parseInt(@filename.split('-')[0], 10).should.be.within(Date.now() - 100, Date.now() + 100)
+
+    it 'should create a filename with name', ->
+      @filename.replace('.coffee', '').split('-').should.include 'foo'
+
+    it 'should create file in migration directory', ->
+      fs.existsSync(path.join('./test/tmp', @filename))

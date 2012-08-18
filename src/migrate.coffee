@@ -6,6 +6,7 @@ fs = require 'fs'
 _ = require 'underscore'
 path = require 'path'
 cwd = process.cwd
+exec = require('child_process').exec
 
 class Migration
   
@@ -15,12 +16,16 @@ class Migration
     @path = path.join(path.relative(__dirname, dir), @filename)
     
   up: (db) =>
-    require(@path).up(db)
-    db.query("insert into migrations(filename) values($1)", [@filename])
+    m = require(@path)
+    if m.up?
+      require(@path).up(db)
+      db.query("insert into migrations(filename) values($1)", [@filename])
     
-  down: (db) =>    
-    require(@path).down(db)
-    db.query("delete from migrations where filename = $1", [@filename])
+  down: (db) =>       
+    m = require(@path)
+    if m.down?
+      m.down(db)
+      db.query("delete from migrations where filename = $1", [@filename])
 
 module.exports = class Migrate
 
@@ -28,13 +33,9 @@ module.exports = class Migrate
     
     @dbconfig = require(@options.config || path.join(process.cwd(), 'config/database.yml'))
     
-    @env = @options.env || process.env.NODE_ENV || 'development'
+    @env = @options.env || process.env.NODE_ENV || 'development'    
     
-    @db = pgfibers.connect(@dbconfig[@env])
-    
-    @path = path.join(cwd(), @options.migrations || './migrations')
-    
-    @init()
+    @path = path.join(cwd(), @options.migrations || './migrations')    
 
   query: (query, args) =>
     @db.query(query, args || null).rows
@@ -71,6 +72,9 @@ module.exports = class Migrate
       throw e
     
   up: (steps = null) =>
+    @db = pgfibers.connect(@dbconfig[@env])
+    @init()
+    
     targets = @available()
     targets = targets.slice(0, steps) if steps
     
@@ -79,6 +83,22 @@ module.exports = class Migrate
         m.up(@db)
             
   down: (steps) =>
+    @db = pgfibers.connect(@dbconfig[@env])
+    @init()
+    
     @transaction =>
       for m in @finished().reverse().slice(0, steps || 1)
         m.down(@db)
+
+  create: (name, ext = 'coffee') =>
+    unless fs.existsSync(@path)
+      fs.mkdirSync(@path) 
+    
+    timestamp = Date.now()
+    filename = "#{timestamp}-#{name}.#{ext}"
+    fullpath = path.join(@path, filename)
+    f = new Future
+    exec "touch #{fullpath}", f.resolver()
+    f.wait()    
+    filename
+    
