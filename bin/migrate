@@ -8,7 +8,12 @@ Fiber(function(){
   program
 	.option('-c --config <yaml file>', 'Database configuration file')
 	.option('-e --env <environment>', 'Environment to use')
+	.option('--coffee', 'Include coffee script')
+	.parse(process.argv)
 
+  if(program.coffee)
+	require('coffee-script');
+  
 
   program
 	.command('up')
