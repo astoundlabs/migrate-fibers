@@ -45,6 +45,7 @@ describe 'Migrate', ->
 
       beforeEach ->
         @migrate = new Migrate
+          quiet: true
           migrations: './test/fixtures/migrations/good-up'
 
       it 'should run unrun migrations', ->
@@ -70,6 +71,7 @@ describe 'Migrate', ->
     describe 'that fails', ->
       beforeEach ->
         @migrate = new Migrate
+          quiet: true        
           migrations: './test/fixtures/migrations/bad-up'
         try          
           @migrate.up()
@@ -88,6 +90,7 @@ describe 'Migrate', ->
     describe 'that succeeds', ->
       beforeEach ->
         @migrate = new Migrate
+          quiet: true        
           migrations: './test/fixtures/migrations/good-down'
               
       it 'should execute down on already executed migrations', ->
@@ -118,6 +121,7 @@ describe 'Migrate', ->
     describe 'that fails', ->
       beforeEach ->
         @migrate = new Migrate
+          quiet: true        
           migrations: './test/fixtures/migrations/bad-down'      
         @migrate.up()
         try
@@ -136,6 +140,7 @@ describe 'Migrate', ->
     it 'should connect to db based on environment', ->
       (=>
         @migrate = new Migrate
+          quiet: true
           migrations: './test/fixtures/migrations/good-down'
           env: 'development'
         @migrate.up()
@@ -144,6 +149,7 @@ describe 'Migrate', ->
   describe 'create', ->
     beforeEach ->
       @migrate = new Migrate
+        quiet: true      
         migrations: './test/tmp'
       @filename = @migrate.create('foo')
 

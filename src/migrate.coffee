@@ -10,7 +10,7 @@ exec = require('child_process').exec
 
 class Migration
   
-  constructor: (file) ->
+  constructor: (file, @options = {}) ->
     dir = path.dirname(file)
     @filename = path.basename(file)
     @path = path.join(path.relative(__dirname, dir), @filename)
@@ -18,12 +18,14 @@ class Migration
   up: (db) =>
     m = require(@path)
     if m.up?
+      console.log "up #{@filename}" unless @options?.quiet
       require(@path).up(db)
       db.query("insert into migrations(filename) values($1)", [@filename])
     
   down: (db) =>       
     m = require(@path)
     if m.down?
+      console.log "down #{@filename}" unless @options?.quiet
       m.down(db)
       db.query("delete from migrations where filename = $1", [@filename])
 
@@ -54,10 +56,10 @@ module.exports = class Migrate
     migrations.sort (x, y) -> x.filename.localeCompare(y.filename)
     
   available: =>    
-    @_available ||= @sort(new Migration(path.join(@path, f)) for f in (fs.readdirSync(@path)))
+    @_available ||= @sort(new Migration(path.join(@path, f), {quiet: @options?.quiet}) for f in (fs.readdirSync(@path)))
     
   finished: =>
-    @_finished = @sort(new Migration(path.join(@path, r.filename)) for r in @query("select filename from migrations"))   
+    @_finished = @sort(new Migration(path.join(@path, r.filename), {quiet: @options?.quiet}) for r in @query("select filename from migrations"))   
     
   unfinished: =>
     @_unfinished ||= _.difference(@available(), @finished())
