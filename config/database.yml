@@ -1,4 +1,8 @@
+development:
+  user: migrate
+  password: migrate
+  database: migrate_dev
 test:
   user: migrate
   password: migrate
-  database: migrate
+  database: migrate_test

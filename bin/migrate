@@ -31,6 +31,17 @@ Fiber(function(){
 	});
 
   program
+	.command('redo')
+    .option('-s --steps', 'Steps to redo')
+	.action(function(){
+	  m = new Migrate(_.extend({}, program, this))
+	  steps = program.steps || 1
+	  m.down(steps)
+	  m.up(steps)
+	  console.log("Redid most recent " + steps + " migrations");
+	});
+
+  program
 	.command('create <name>')
 	.action(function(name){
 	  var filename = new Migrate(_.extend({}, program, this)).create(name);
