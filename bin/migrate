@@ -8,10 +8,10 @@ Fiber(function(){
   program
 	.option('-c --config <yaml file>', 'Database configuration file')
 	.option('-e --env <environment>', 'Environment to use')
-	.option('--coffee', 'Include coffee script')
+	.option('--nocoffee', 'No not include coffee script')
 	.parse(process.argv)
 
-  if(program.coffee)
+  unless(program.nocoffee)
 	require('coffee-script');
   
 
