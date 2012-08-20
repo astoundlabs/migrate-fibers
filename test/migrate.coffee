@@ -4,10 +4,11 @@ Future = require 'fibers/future'
 yaml = require('js-yaml')
 settings = require('../config/database.yml').test
 pgfibers = require 'pg-fibers'
-should = require 'should'
+assert = should = require 'should'
 pg = require 'pg'
 path = require 'path'
 fs = require 'fs'
+sinon = require 'sinon'
 
 
 exec = (cmd) ->
@@ -67,6 +68,14 @@ describe 'Migrate', ->
       it 'if steps are specified, should only run specified number of migrations', ->
         @migrate.up(1)
         @db.query("select count(*) from migrations").rows[0].count.should.eql 1
+
+      it 'will only run a given migration once', ->
+        migration = require('./fixtures/migrations/good-up/1345231192-create-table-foo.coffee')
+        
+        spy = sinon.spy(migration, 'up')
+        @migrate.up()
+        @migrate.up()
+        assert spy.calledOnce
 
     describe 'that fails', ->
       beforeEach ->
@@ -141,8 +150,8 @@ describe 'Migrate', ->
       (=>
         @migrate = new Migrate
           quiet: true
-          migrations: './test/fixtures/migrations/good-down'
-          env: 'development'
+          migrations: './test/fixtures/migrations/good-up'
+          env: 'foo'
         @migrate.up()
       ).should.throw()
       

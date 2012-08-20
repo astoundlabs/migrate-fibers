@@ -56,13 +56,15 @@ module.exports = class Migrate
     migrations.sort (x, y) -> x.filename.localeCompare(y.filename)
     
   available: =>    
-    @_available ||= @sort(new Migration(path.join(@path, f), {quiet: @options?.quiet}) for f in (fs.readdirSync(@path)))
+    @sort(new Migration(path.join(@path, f), {quiet: @options?.quiet}) for f in (fs.readdirSync(@path)))
     
   finished: =>
-    @_finished = @sort(new Migration(path.join(@path, r.filename), {quiet: @options?.quiet}) for r in @query("select filename from migrations"))   
+    @sort(new Migration(path.join(@path, r.filename), {quiet: @options?.quiet}) for r in @query("select filename from migrations"))   
     
   unfinished: =>
-    @_unfinished ||= _.difference(@available(), @finished())
+    finished = @finished()
+    @available().filter (a) ->
+      not finished.some (f) -> f.filename == a.filename
 
   transaction: (cb) =>
     @query 'BEGIN'
@@ -77,9 +79,8 @@ module.exports = class Migrate
     @db = pgfibers.connect(@dbconfig[@env])
     @init()
     
-    targets = @available()
+    targets = @unfinished()
     targets = targets.slice(0, steps) if steps
-    
     @transaction =>
       for m in targets
         m.up(@db)

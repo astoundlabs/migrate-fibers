@@ -14,6 +14,7 @@
   "devDependencies": {
 	"mocha-fibers": "git://github.com/astoundlabs/mocha-fibers",
 	"js-yaml": "1.0.x",
-	"should": "1.1.x"
+	"should": "1.1.x",
+	"sinon": "1.4.x"
   }
 }
