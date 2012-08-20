@@ -11,7 +11,7 @@ Fiber(function(){
 	.option('--nocoffee', 'No not include coffee script')
 	.parse(process.argv)
 
-  unless(program.nocoffee)
+  if(!program.nocoffee)
 	require('coffee-script');
   
 
